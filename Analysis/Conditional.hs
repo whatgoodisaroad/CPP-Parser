@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 
 -- | A simpler representation of conditional structures.  We translate 
 --   CPP-annotated code into this for easier analysis.
@@ -8,6 +9,7 @@ import Data.List (nub)
 
 import Language.CPP.Syntax (CExpr(..))
 import qualified Language.CPP.Syntax as C
+import Data.Data
 
 --
 -- * Conditional expressions
@@ -18,7 +20,7 @@ type Name = String
 data Cond c a = Leaf a
               | IfThen     c [Cond c a]
               | IfThenElse c [Cond c a] [Cond c a]
-              deriving (Eq, Show)
+              deriving (Eq, Show, Data, Typeable)
 
 --
 -- * Boolean Expressions
@@ -29,7 +31,7 @@ data BExpr = Con Bool
            | Not BExpr
            | And BExpr BExpr
            | Or  BExpr BExpr
-           deriving (Eq, Show)
+           deriving (Eq, Show, Data, Typeable)
 
 -- | Some shortcuts for creating Maybe BExprs.
 mcon = Just . Con

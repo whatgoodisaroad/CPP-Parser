@@ -2,20 +2,24 @@
 module Main where
 
 import Data.List (intersect,nub,partition,union)
+import Control.Applicative
 
 import System.Environment
 import System.IO.Unsafe
 
 import Language.CPP.Syntax
 import Language.CPP.Parser
+
 import Analysis.Conditional
 import Analysis.Translator
+import Analysis.FeatureModelValidation
 
 parseFiles :: Eq a => KeepData a -> [FilePath] -> IO [File a]
 parseFiles k = mapM (unsafeInterleaveIO . parseFile k)
 
-parseAndTranslate :: (Eq a, DataIs a)
-                  => KeepData a -> [FilePath] -> IO ([Cond BExpr (StoreAs a)], [CExpr])
+parseAndTranslate :: 
+    (Eq a, DataIs a) => 
+    KeepData a -> [FilePath] -> IO ([Cond BExpr (StoreAs a)], [CExpr])
 parseAndTranslate k ps = parseFiles k ps >>= return . convert . extract
 
 readPathsFromFile :: FilePath -> IO [FilePath]
@@ -29,3 +33,7 @@ mainGetPaths = do as <- getArgs
 
 main = do fs <- mainGetPaths >>= parseFiles discard
           mapM_ putStrLn (findMacros fs)
+
+
+parseTestfile = fst <$> parseAndTranslate keep ["cases/mutex.c"]
+
