@@ -4,21 +4,11 @@ module Analysis.FeatureModelValidation where
 import Language.CPP.Syntax
 import Analysis.Conditional
 
+import Data.List
 import Data.Generics
 
 
 type Tree a = Cond BExpr (Text a)
-
----- | Find all of the non-function macro uses.
---findMacros :: Data a => a -> [Macro]
---findMacros = everything (++) (mkQ [] inE `extQ` inD)
---  where 
---    inE (Defined m)   = [m]
---    inE (Macro   m)   = [m]
---    inE e             = []
---    inD (DM Ifdef m)  = [m]
---    inD (DM Ifndef m) = [m]
---    inD d             = []
 
 
 usesMacro :: Tree a -> Macro -> Bool
@@ -46,3 +36,10 @@ macroChildren tree macro = everything (++) (mkQ [] inCond) tree
 
 isNested :: [Tree String] -> Macro -> Macro -> Bool
 isNested file parent child = any (`containsMacro` child) $ file `macroChildren` parent
+
+mutuallyExclusive :: [Tree String] -> [Macro] -> Bool
+mutuallyExclusive tree macros = and $ do
+	parent <- macros
+	child <- macros \\ [ parent ]
+	return $ not $ isNested tree parent child
+
